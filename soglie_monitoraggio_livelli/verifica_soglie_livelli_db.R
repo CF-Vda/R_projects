@@ -76,7 +76,7 @@ jd <- as.numeric(format(Sys.Date(), "%Y%j"))
 
 #-- build the precipitaz.txt query
 
-[...]
+#[...]
 
 #- ----------------------------------------------------------------------
 #- disconnect from database server
