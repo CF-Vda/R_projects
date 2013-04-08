@@ -1,0 +1,22 @@
+Stazione	StId	H0	H1	H2	H3
+Valtournenche - Maen	1720	0.72	0.9	1.2	
+Arvier - Chamençon	1000	2.4	3	4	
+Roisan - Moulin	1560	0.8	1	1.5	
+Brusson - Extrapieraz	1060	0.64	0.8	1.2	
+Champorcher - Chardonney	1110	0.8	1	2	
+Gressoney-L.T. - Courtlys	1260	0.8	1	1.5	
+Gressoney-S.J. - Capoluogo	1290	0.8	1	2	
+Issime - Capoluogo	1320	1.04	1.3	2	
+Pont-St-Martin - Circonvallazione	1460	1.6	2	3	
+Cogne - Cretaz	1130	1.2	1.5	2.5	
+Rhêmes-Notre-Dame - Chanavey	1520	0.64	0.8	1.2	
+Rhêmes-S.G. - Capoluogo	1550	0.72	0.9	1.4	
+Valsavarenche - Eaux-Rousses	1650	0.64	0.8	1.2	
+Pré-St-Didier - Capoluogo	1490	1.2	1.5	2	
+St-Oyen - Moulin	1570	0.64	0.8	1.4	
+Valpelline - Prelé	1640	0.8	1	1.5	
+Hône	1310		3.4	4.5	5.5
+Champdepraz	1100		2.5	3.7	4.2
+Pontey	1480		3.2	4.2	5.5
+Nus - Les Iles	1430		0.8	1.15	2
+Aymavilles	1020		2.3	3	3.5
