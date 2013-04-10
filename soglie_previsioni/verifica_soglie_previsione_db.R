@@ -18,7 +18,7 @@
 
 #- ----------------------------------------------------------------------
 #- set application working directory
- if(.Platform$OS.type == "windows") {  
+ if(.Platform$OS.type == "windows") {
    setwd('C:\\Progetti_R\\soglie_previsioni')
 } else if(.Platform$OS.type == "unix") {
    setwd("~/")
@@ -51,7 +51,7 @@ CONF <- INI.Parse("soglie.ini")
 
 #- ----------------------------------------------------------------------
 #- clean up
-#rm(list=ls(all=TRUE)) 
+#rm(list=ls(all=TRUE))
 
 x<-paste(CONF$Options$base_path, "input","precipitaz.txt", sep="/")
 unlink(x, recursive = FALSE, force = TRUE)
@@ -123,6 +123,62 @@ if (DEBUG) dataframe_report(dbdata)
 #- export file - work dir + ....
 file <- paste(CONF$Options$base_path, "input","precipitaz.txt", sep="/")
 dataframe_dump(dbdata, file)
+
+
+#-- build the zterm_qneve.txt
+query <- paste("
+SELECT  'A' as zona,
+    max(CASE WHEN id_h12=12 THEN zero_termico END) AS zt_0,
+    max(CASE WHEN id_h12=24 THEN zero_termico END) AS zt_12,
+    max(CASE WHEN id_h12=36 THEN zero_termico END) AS zt_24,
+    max(CASE WHEN id_h12=12 THEN quota_neve   END) AS qn_0,
+    max(CASE WHEN id_h12=24 THEN quota_neve   END) AS qn_12,
+    max(CASE WHEN id_h12=36 THEN quota_neve   END) AS qn_24
+    FROM bulletins_meteo.bullettin_vigilance_data_h12
+    WHERE bl_id = '",jd,"' AND zona='A'
+    GROUP BY 1
+    UNION ALL
+    SELECT  'B' as zona,
+    max(CASE WHEN id_h12=12 THEN zero_termico END) AS zt_0,
+    max(CASE WHEN id_h12=24 THEN zero_termico END) AS zt_12,
+    max(CASE WHEN id_h12=36 THEN zero_termico END) AS zt_24,
+    max(CASE WHEN id_h12=12 THEN quota_neve   END) AS qn_0,
+    max(CASE WHEN id_h12=24 THEN quota_neve   END) AS qn_12,
+    max(CASE WHEN id_h12=36 THEN quota_neve   END) AS qn_24
+    FROM bulletins_meteo.bullettin_vigilance_data_h12
+    WHERE bl_id = '",jd,"' AND zona='B'
+    GROUP BY 1
+    UNION ALL
+    SELECT  'C' as zona,
+    max(CASE WHEN id_h12=12 THEN zero_termico END) AS zt_0,
+    max(CASE WHEN id_h12=24 THEN zero_termico END) AS zt_12,
+    max(CASE WHEN id_h12=36 THEN zero_termico END) AS zt_24,
+    max(CASE WHEN id_h12=12 THEN quota_neve   END) AS qn_0,
+    max(CASE WHEN id_h12=24 THEN quota_neve   END) AS qn_12,
+    max(CASE WHEN id_h12=36 THEN quota_neve   END) AS qn_24
+    FROM bulletins_meteo.bullettin_vigilance_data_h12
+    WHERE bl_id = '",jd,"' AND zona='C'
+    GROUP BY 1
+    UNION ALL
+    SELECT  'D' as zona,
+    max(CASE WHEN id_h12=12 THEN zero_termico END) AS zt_0,
+    max(CASE WHEN id_h12=24 THEN zero_termico END) AS zt_12,
+    max(CASE WHEN id_h12=36 THEN zero_termico END) AS zt_24,
+    max(CASE WHEN id_h12=12 THEN quota_neve   END) AS qn_0,
+    max(CASE WHEN id_h12=24 THEN quota_neve   END) AS qn_12,
+    max(CASE WHEN id_h12=36 THEN quota_neve   END) AS qn_24
+    FROM bulletins_meteo.bullettin_vigilance_data_h12
+    WHERE bl_id = '",jd,"' AND zona='D'
+    GROUP BY 1", sep="")
+dbdata <- PG.ExecuteQuery(DBH, query)
+#- remove first column
+dbdata <- dbdata[,-1]
+if (DEBUG) dataframe_report(dbdata)
+
+#- export file - work dir + ....
+file <- paste(CONF$Options$base_path, "input","zterm_qneve.txt", sep="/")
+dataframe_dump(dbdata, file)
+
 
 
 #- ----------------------------------------------------------------------
