@@ -54,7 +54,9 @@ CONF <- INI.Parse("soglie.ini")
 #rm(list=ls(all=TRUE))
 
 x<-paste(CONF$Options$base_path, "input","precipitaz.txt", sep="/")
-unlink(x, recursive = FALSE, force = TRUE)
+y<-paste(CONF$Options$base_path, "input","cancellinova.txt", sep="/")
+z<-paste(CONF$Options$base_path, "input","zterm_qneve.txt", sep="/")
+unlink(c(x,y,z), recursive = FALSE, force = TRUE)
 
 #- ----------------------------------------------------------------------
 #- user settings
