@@ -53,15 +53,19 @@ CONF <- INI.Parse("soglie.ini")
 #- clean up
 #rm(list=ls(all=TRUE)) 
 
-#x<-paste(CONF$Options$base_path, "input","precipitaz.txt", sep="/")
-#unlink(x, recursive = FALSE, force = TRUE)
+x[1]=paste(CONF$Options$base_path, "input","monitoraggio_prec_A.txt", sep="/")
+x[2]=paste(CONF$Options$base_path, "input","monitoraggio_prec_B.txt", sep="/")
+x[3]=paste(CONF$Options$base_path, "input","monitoraggio_prec_C.txt", sep="/")
+x[4]=paste(CONF$Options$base_path, "input","monitoraggio_prec_D.txt", sep="/")
+x[5]=paste(CONF$Options$base_path, "input","cancellinova_36ore.txt", sep="/")
+x[6]=paste(CONF$Options$base_path, "input","zero_termVDA_36ore.txt", sep="/")
+unlink(x, recursive = FALSE, force = TRUE)
 
 #- ----------------------------------------------------------------------
 #- user settings
 flog.info("user settings")
 
 external_program='C:/Progetti_R/soglie_monitoraggio_prec/verifica_soglie_monitoraggio_prec.R'
-
 
 #- ----------------------------------------------------------------------
 #- disconnect all connection from db

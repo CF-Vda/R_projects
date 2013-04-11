@@ -1,22 +1,29 @@
-#DETERMINA LA CRITICITA' PER I DATI DI MONITORAGGIO DELLE PRECIPITAZIONI: 
-#CARICA I DATI DI PRECIPITAZIONE, DI ZERO TERMICO E SUPERAMENTO DELLA CANCELLINOVA, PER LE 36 ORE PRECEDENTI:
-#il numero di ore può essere modificato senza modificare la procedura, a patto che tutti i file siano coerenti
+#CONFRONTA I DATI DI MONITORAGGIO (PER LE 36 ORE PRECEDENTI) DI PRECIPITAZIONE E QUOTA NEVE CON VALORI DI SOGLIA PRESTABILITI, 
+#E DETERMINA LA CRITICITA' (NON CRITICA-ORDINARIA-MODERATA) ASSOCIATA AD OGNI ZONA. 
+#RESTITUISCE UNA TABELLA CON LE CRITICITA' RISULTANTI. 
+
+#NOTA:il numero di ore può essere modificato senza modificare lo script, a patto che tutti i file siano coerenti
+
+#---------------------------------------------------------------------------------------------------------------------
+# INPUT:
 
 percorso_input=paste(CONF$Options$base_path, "input/", sep="/")
 percorso_output= paste(CONF$Options$base_path, "output/", sep="/") 
  
-#nomi dei file con i dati di precipitazione:
+#NOMI DEI FILE CON I DATI DI PRECIPITAZIONE:
 nomefile=c('monitoraggio_prec_A.txt','monitoraggio_prec_B.txt','monitoraggio_prec_C.txt','monitoraggio_prec_D.txt')
 
+#CARICA DATI MONITORAGGIO CANCELLINOVA E QUOTA NEVE
 cancellinova=read.table(paste0(percorso_input,'cancellinova_36ore.txt'),sep='\t',header=TRUE,na.string=NA) #percentuale superamento della cancellinova nelle ultime 36 ore per una zona (senza date)
-
 Qneve=read.table(paste0(percorso_input,'zero_termVDA_36ore.txt'),sep='\t',header=TRUE,na.string=NA) #zero termico delle ultime 36 ore (dato unico per VDA)(senza date)
 
+#CARICA TABELLA CON VALORI DI SOGLIA DI RIFERIMENTO
 soglie=read.table(paste0(percorso_input,'soglie_prec.txt'),sep='\t',header=TRUE) #soglie di riferimento di precipitazione e quota neve
 
-#-----------------------------------
 
-#CARATTERISTICHE GRAFICI:
+#------------------------------------------------------------------------------------------------
+#CARATTERISTICHE DEI GRAFICI DI OUTPUT:
+
 data_sistema=Sys.Date()
 larghezza=1024
 altezza=768
@@ -24,12 +31,15 @@ unita='px'
 sfondo='white' 
 risoluzione=NA #in dpi
 
-#-----------------------------------------------
-#CREO UNA TABELLA IN CUI MEMORIZZARE I RISULTATI
+#----------------------------------------------------------------------------------------------
+#INIZIALIZZAZIONE TABELLA IN CUI MEMORIZZARE I RISULTATI
 tabella=matrix(NA,4,9) 
 colnames(tabella)=c("Zone","perc_sup_CancNova","sup_CancNova","Pmed24h","Pmax12h","Pmax24h","QNeve_ord","QNeve_mod","Criticita")
 tabella=data.frame(tabella)
 tabella$Zone=c('A','B','C','D')
+
+#----------------------------------------------------------------------------------------------
+#CRITICITA' ASSOCIATA AL SUPERAMENTO DELLA CANCELLINOVA
 
 #COMPLETAMENTO DEI VALORI DELLA CANCELLINOVA, IN CASO DI VALORI MANCANTI:
 if(sum(is.na(cancellinova))>0)
@@ -46,9 +56,13 @@ if(sum(is.na(cancellinova))>0)
 		}
 	}
 }
+
 #VERIFICA IL SUPERAMENTO DELLA CANCELLINOVA
 tabella$perc_sup_CancNova=apply(cancellinova,2,max,na.rm=TRUE)
 tabella$sup_CancNova=tabella$perc_sup_CancNova>0
+
+#------------------------------------------------------------------------------------------------
+#CRITICITA' ASSOCIATA ALLA QUOTA NEVE
 
 #QUOTA NEVE MEDIA: calcolo la quota neve media per la VDA 
 Qneve=Qneve-300 #abbasso lo zero termico di 300 metri per ottenere la quota neve teorica
@@ -58,19 +72,27 @@ Qneve_med=colMeans(Qneve,na.rm=TRUE)
 tabella$QNeve_ord=Qneve_med>=soglie$Qneve_ord 
 tabella$QNeve_mod=Qneve_med>=soglie$Qneve_mod
 
+
 #-------------------------------------------------------------------------------------------------------------------------------------------------
-#PARTE DI PROCEDURA DA RIPETERE PER OGNI ZONA:
+#-----------------------------------PARTE DI PROCEDURA DA RIPETERE PER OGNI ZONA:-----------------------------------------------------
+#-------------------------------------------------DA QUI-------------------------------------------------------
 
 for(zona in 1:4) #zona A=1, B=2, C=3, D=4
 {
-#CARICA I DATI DI PRECIPITAZIONE DELLE STAZIONI
+#-----------------------------------------------------------------------------------------------
+#INPUT:
+
+# CARICA I DATI DI PRECIPITAZIONE DELLE STAZIONI
 Prec=read.table(paste0(percorso_input,nomefile[zona]),sep='\t',header=TRUE, skip=1) #monitoraggio precipitazioni per una zona (numero variabile di stazioni)
 
 #SEPARO LA COLONNA CON LE DATE DAI DATI DI PRECIPITAZIONE(la riga dei codici non è stata caricata)
 date_prec=as.POSIXct(Prec[,1],format='%d/%m/%Y %H.%M')
 Prec=Prec[,-1]
 
-#SOMMA DELLE PRECIPITAZIONI DELLE 12/24 ORE:
+#---------------------------------------------------------------------------------------------------
+# ELABORAZIONI:
+
+#AGGREGA LE PRECIPITAZIONI PER 12/24 ORE:
 Ndati=nrow(Prec)
 Nstaz=ncol(Prec)
 P12h=matrix(NA,Ndati-11,Nstaz) #matrice con le prec di 12 ore, per ogni stazione
@@ -90,7 +112,10 @@ Pmax24h=apply(P24h,1,max,na.rm=TRUE)
 Pmed24h=apply(P24h,1,mean,na.rm=TRUE)
 
 #VERIFICA SUPERAMENTO DELLE SOGLIE DI PRECIPITAZIONE
-tabella[zona,4]=max(Pmed24h)>=soglie$Pmed24[zona] #superamento della soglia di prec media aggregata a 24 ore
+
+#superamento della soglia di prec media aggregata a 24 ore:
+tabella[zona,4]=max(Pmed24h)>=soglie$Pmed24[zona] 
+
 #costruisco il vettore soglia per P12h e P24h variabile nel tempo:
 soglieP12=matrix(NA,Ndati-11,1)
 soglieP24=matrix(NA,Ndati-23,1)
@@ -104,10 +129,13 @@ for(h in 1:(Ndati-23))
 		{soglieP24[h,1]=soglie$Pmax24canc[zona]}
 	 else{soglieP24[h,1]=soglie$Pmax24[zona]}
 	}
+# superamento della soglia di prec max aggregata 12 e a 24 ore:
 tabella[zona,5]=any(Pmax12h>=soglieP12) #superamento della soglia di criticità di prec 12 ore
 tabella[zona,6]=any(Pmax24h>=soglieP24) #superamento della soglia di criticità di prec 24 ore
 
-#GRAFICI:
+#---------------------------------------------------------------------------------------------
+# OUTPUT GRAFICI:
+
 #caratteristiche:
 zona_char=switch(zona,'A','B','C','D')
 etichette=substr(names(Prec),1,20) #estrae le etichette per il grafico dai nomi delle colonne del dataframe (primi 20 caratteri)
@@ -196,8 +224,12 @@ grid(nx=NA,ny=NULL) #griglia per l'asse y
 box(lty=1) #racchiude il grafico in un box
 dev.off()
 }
-#------------------------------------------------------------------------------------------------------------------------------------------------
-# RISULTATI TABELLA:
+#-------------------------------------------A QUI-------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------------------------
+# CRITICITA' RISULTANTE
+
 for(h in 1:4)
 {if(tabella$Pmed24h[h] && (tabella$Pmax12h[h] || tabella$Pmax24h[h]) && tabella$QNeve_mod[h])
 	{tabella$Criticita[h]='MODERATA'}
@@ -207,7 +239,10 @@ for(h in 1:4)
 	}
 }
 
-#SCRITTURA DELLA TABELLA CON I RISULTATI
+#----------------------------------------------------------------------------------------------------------
+#OUTPUT:
+
+#SCRITTURA SU FILE DELLA TABELLA CON LE CRITICITA' RISULTANTI
 nome_file=paste0(percorso_output,data_sistema,'_tab_criticita_monitoraggio.txt')
 write.table(tabella,file=nome_file,append=FALSE,sep='\t',row.names=FALSE,col.names=TRUE)
 

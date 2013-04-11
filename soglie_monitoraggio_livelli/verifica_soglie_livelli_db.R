@@ -53,8 +53,8 @@ CONF <- INI.Parse("soglie.ini")
 #- clean up
 #rm(list=ls(all=TRUE)) 
 
-#x<-paste(CONF$Options$base_path, "input","precipitaz.txt", sep="/")
-#unlink(x, recursive = FALSE, force = TRUE)
+x<-paste(CONF$Options$base_path, "input","livelli_36ore.txt", sep="/")
+unlink(x, recursive = FALSE, force = TRUE)
 
 #- ----------------------------------------------------------------------
 #- user settings
@@ -74,7 +74,7 @@ DBH <- PG.Connect(CONF$Database)
 #- get bulletin ID - year + julian day
 jd <- as.numeric(format(Sys.Date(), "%Y%j"))
 
-#-- build the precipitaz.txt query
+#-- build the livelli_36ore.txt query
 
 #[...]
 
