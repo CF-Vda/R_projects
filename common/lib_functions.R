@@ -62,10 +62,10 @@ INI.Parse <- function(INI.filename) {
 #- - common functions
 #- ---------------------------------------------------------------------
 #- store a data.frame into file
-dataframe_dump <- function(data_frame, file_name) {
+dataframe_dump <- function(data_frame, file_name, appendmode = FALSE) {
     #- write to stdout
     #write.csv(data_frame, quote = FALSE, file = file_name, sep = "\t")
-    write.table(data_frame, quote = FALSE, file = file_name, append = FALSE,
+    write.table(data_frame, quote = FALSE, file = file_name, append = appendmode,
                 row.names = FALSE, sep = "\t", eol = "\n", qmethod = "double")
 }
 
