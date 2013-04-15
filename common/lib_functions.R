@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 #- ----------------------------------------------------------------------
-#-  Copyright (c) 1995-2013, Ecometer s.n.c. ?
+#-  Copyright (c) 1995-2013, Ecometer s.n.c.
 #-  Author: Paolo Saudin.
 #-
 #-  RESOURCE : http://google-styleguide.googlecode.com/svn/trunk/google-r-style.html
