@@ -47,22 +47,23 @@ flog.debug("----------------------------------- S T A R   U P ------------------
 
 #- ----------------------------------------------------------------------
 #- reading ini file
-CONF <- INI.Parse("soglie.ini")
+CONF <- INI.Parse("indicatori_rischio.ini")
 
 #- ----------------------------------------------------------------------
 #- clean up
 #rm(list=ls(all=TRUE))
 
-x<-paste(CONF$Options$base_path, "input","precipitaz.txt", sep="/")
-y<-paste(CONF$Options$base_path, "input","cancellinova.txt", sep="/")
-z<-paste(CONF$Options$base_path, "input","zterm_qneve.txt", sep="/")
-unlink(c(x,y,z), recursive = FALSE, force = TRUE)
+x[1]<-paste(CONF$Options$base_path, "input","precipitaz.txt", sep="/")
+x[2]<-paste(CONF$Options$base_path, "input","zterm_qneve.txt", sep="/")
+x[3]<-paste(CONF$Options$base_path, "input","portate_indicatori.txt", sep="/")
+x[4]<-paste(CONF$Options$base_path, "input","zero_termVDA_36ore.txt", sep="/")
+unlink(x, recursive = FALSE, force = TRUE)
 
 #- ----------------------------------------------------------------------
 #- user settings
 flog.info("user settings")
 
-external_program='C:/Progetti_R/soglie_previsioni/verifica_soglie_previsione.R'
+external_program='C:/Progetti_R/indicatori rischio/Indicatori_rischio.R'
 
 
 #- ----------------------------------------------------------------------
@@ -77,7 +78,6 @@ DBH <- PG.Connect(CONF$Database)
 #- get bulletin ID - year + julian day
 jd <- as.numeric(format(Sys.Date(), "%Y%j"))
 
-
 #- ----------------------------------------------------------------------
 #-- check bulletin exists - 0,1
 query <- paste("SELECT count(*) FROM bulletins_meteo.bullettin_vigilance 
@@ -87,8 +87,8 @@ if (DEBUG) dataframe_report(dbdata)
 
 if(dbdata==0)
 {#- disconnect from database server
- PG.Disconnect(DBH)
- # stop script
+  PG.Disconnect(DBH)
+  # stop script
   stop("No vigilanza data", call.=F)
 }
 
@@ -156,10 +156,7 @@ query <- paste("
         'A' as zona,
         max(CASE WHEN id_h12=12 THEN zero_termico END) AS zt_0,
         max(CASE WHEN id_h12=24 THEN zero_termico END) AS zt_12,
-        max(CASE WHEN id_h12=36 THEN zero_termico END) AS zt_24,
-        max(CASE WHEN id_h12=12 THEN quota_neve   END) AS qn_0,
-        max(CASE WHEN id_h12=24 THEN quota_neve   END) AS qn_12,
-        max(CASE WHEN id_h12=36 THEN quota_neve   END) AS qn_24
+        max(CASE WHEN id_h12=36 THEN zero_termico END) AS zt_24        
     FROM bulletins_meteo.bullettin_vigilance_data_h12
     WHERE bl_id = '",jd,"' AND zona='A'
     GROUP BY 1
@@ -168,10 +165,7 @@ query <- paste("
         'B' as zona,
         max(CASE WHEN id_h12=12 THEN zero_termico END) AS zt_0,
         max(CASE WHEN id_h12=24 THEN zero_termico END) AS zt_12,
-        max(CASE WHEN id_h12=36 THEN zero_termico END) AS zt_24,
-        max(CASE WHEN id_h12=12 THEN quota_neve   END) AS qn_0,
-        max(CASE WHEN id_h12=24 THEN quota_neve   END) AS qn_12,
-        max(CASE WHEN id_h12=36 THEN quota_neve   END) AS qn_24
+        max(CASE WHEN id_h12=36 THEN zero_termico END) AS zt_24
     FROM bulletins_meteo.bullettin_vigilance_data_h12
     WHERE bl_id = '",jd,"' AND zona='B'
     GROUP BY 1
@@ -180,10 +174,7 @@ query <- paste("
         'C' as zona,
         max(CASE WHEN id_h12=12 THEN zero_termico END) AS zt_0,
         max(CASE WHEN id_h12=24 THEN zero_termico END) AS zt_12,
-        max(CASE WHEN id_h12=36 THEN zero_termico END) AS zt_24,
-        max(CASE WHEN id_h12=12 THEN quota_neve   END) AS qn_0,
-        max(CASE WHEN id_h12=24 THEN quota_neve   END) AS qn_12,
-        max(CASE WHEN id_h12=36 THEN quota_neve   END) AS qn_24
+        max(CASE WHEN id_h12=36 THEN zero_termico END) AS zt_24        
     FROM bulletins_meteo.bullettin_vigilance_data_h12
     WHERE bl_id = '",jd,"' AND zona='C'
     GROUP BY 1
@@ -192,10 +183,7 @@ query <- paste("
         'D' as zona,
         max(CASE WHEN id_h12=12 THEN zero_termico END) AS zt_0,
         max(CASE WHEN id_h12=24 THEN zero_termico END) AS zt_12,
-        max(CASE WHEN id_h12=36 THEN zero_termico END) AS zt_24,
-        max(CASE WHEN id_h12=12 THEN quota_neve   END) AS qn_0,
-        max(CASE WHEN id_h12=24 THEN quota_neve   END) AS qn_12,
-        max(CASE WHEN id_h12=36 THEN quota_neve   END) AS qn_24
+        max(CASE WHEN id_h12=36 THEN zero_termico END) AS zt_24
     FROM bulletins_meteo.bullettin_vigilance_data_h12
     WHERE bl_id = '",jd,"' AND zona='D'
     GROUP BY 1", sep="")
@@ -209,22 +197,17 @@ if (DEBUG) dataframe_report(dbdata)
 file <- paste(CONF$Options$base_path, "input","zterm_qneve.txt", sep="/")
 dataframe_dump(dbdata, file)
 
+
 #- ----------------------------------------------------------------------
-#-- build the cancellinova.txt
+#-- build the zero_termVDA_36ore query
 query <- paste("
-    SELECT
-        m.fulldate AS data,
-        case when (tables_qca.tbl_zona_a.id_4_cod <= 2 ) then round(cast( tables_qca.tbl_zona_a.id_4  AS numeric), 1) end AS zonaa,
-        case when (tables_qca.tbl_zona_b.id_4_cod <= 2 ) then round(cast( tables_qca.tbl_zona_b.id_4  AS numeric), 1) end AS zonab,
-        case when (tables_qca.tbl_zona_c.id_4_cod <= 2 ) then round(cast( tables_qca.tbl_zona_c.id_4  AS numeric), 1) end AS zonac,
-        case when (tables_qca.tbl_zona_d.id_4_cod <= 2 ) then round(cast( tables_qca.tbl_zona_d.id_4  AS numeric), 1) end AS zonad
-    FROM _master m
-        LEFT JOIN tables_qca.tbl_zona_a USING(fulldate)
-        LEFT JOIN tables_qca.tbl_zona_b USING(fulldate)
-        LEFT JOIN tables_qca.tbl_zona_c USING(fulldate)
-        LEFT JOIN tables_qca.tbl_zona_d USING(fulldate)
-    WHERE m.fulldate >= date_trunc('hour', TIMEZONE('UTC',CURRENT_TIMESTAMP) - interval '3 hour')
-    ORDER BY data LIMIT 4", sep="")
+               SELECT m.fulldate AS fulldate,
+               CASE WHEN (tables_qca.tbl_zone_vda.id_2_cod <= 2 ) 
+               THEN round(cast( tables_qca.tbl_zone_vda.id_2  AS numeric), 0) END AS vda_zero_termico
+               FROM _master m
+               LEFT JOIN tables_qca.tbl_zone_vda USING(fulldate )
+               WHERE m.fulldate  >= date_trunc('hour', TIMEZONE('UTC',CURRENT_TIMESTAMP) - interval '35 hour')
+               ORDER BY 1 LIMIT 36", sep="")
 dbdata <- PG.ExecuteQuery(DBH, query)
 #- remove first column
 dbdata <- dbdata[,-1]
@@ -232,8 +215,46 @@ if (DEBUG) dataframe_report(dbdata)
 
 #- ----------------------------------------------------------------------
 #- export file - work dir + ....
-file <- paste(CONF$Options$base_path, "input","cancellinova.txt", sep="/")
-dataframe_dump(dbdata, file)
+file <- paste(CONF$Options$base_path, "input","zero_termVDA_36ore.txt", sep="/")
+dataframe_dump(dbdata, file,FALSE,TRUE,FALSE)
+
+
+#- ----------------------------------------------------------------------
+#-- build the CancNova_indicatori.txt
+# [...]
+
+#- ----------------------------------------------------------------------
+#-- build the portate_indicatori.txt
+
+stids <- '10050,10010,10020,10030,10040'
+#-- stations names
+#stationshortname
+query <- paste("SELECT st_id FROM _stations WHERE st_id IN (",stids,")", sep="")
+dbdata <- PG.ExecuteQuery(DBH, query)
+# transpose table
+dbdata <- t(dbdata)
+
+if (DEBUG) dataframe_report(dbdata)
+#- ----------------------------------------------------------------------
+#- export file - work dir + ....
+file <- paste(CONF$Options$base_path, "input","portate_indicatori.txt", sep="/")
+dataframe_dump(dbdata, file,FALSE, FALSE,FALSE)
+
+#-- data
+query <- paste("SELECT * FROM tool_meteolab.build_query_soglie_qdora_stids_hours(ARRAY[",stids,"]::smallint[], 36::smallint)", sep="")
+dbdata <- PG.ExecuteQuery(DBH, query)
+query2exe <- dbdata[1,1]
+dbdata <- PG.ExecuteQuery(DBH, query2exe)
+#- remove first column
+dbdata <- dbdata[,-1]
+if (DEBUG) dataframe_report(dbdata)
+#- ----------------------------------------------------------------------
+#- export file - work dir + ....
+file <- paste(CONF$Options$base_path, "input","portate_indicatori.txt", sep="/")
+dataframe_dump(dbdata, file,FALSE, TRUE, TRUE)
+
+
+
 
 #- ----------------------------------------------------------------------
 #- disconnect from database server

@@ -36,7 +36,7 @@ copertura=matrix(NA,nrow=length(soglie$StId),ncol=1)
 
 #ORDINA I MASSIMI e I VALORI DI COPERTURA SECONDO L'ORDINE DELLE STAZIONI PRESENTE NELLA TABELLA CON I LIVELLI DI SOGLIA
 h=1:length(soglie$StId)
-k=match(codici[1,h],soglie$StId[h]) #controlla la corrispondenza dei codici stazione
+k=match(soglie$StId[h],codici[1,h]) #controlla la corrispondenza dei codici stazione
 massimi[h,1]=Liv_idro_max[k] #ordina i valori di Liv_idro_max in base ai codici stazione StId
 copertura[h,1]=copertura_staz[k,1] #ordina i valori di copertura secondo i codici StId
 

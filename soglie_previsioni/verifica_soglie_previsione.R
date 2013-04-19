@@ -8,6 +8,9 @@
 percorso_input= paste(CONF$Options$base_path, "input/", sep="/") #'C:\\Documents and Settings\\Storm\\Desktop\\Denise\\procedura soglie\\'
 percorso_output= paste(CONF$Options$base_path, "output/", sep="/") 
 
+#CONTROLLA SE CI SONO I DATI DI PREVISIONE, ALTRIMENTI ESCE DALLO SCRIPT
+
+
 #CARICA I DATI DI PREVISIONE E PERCENTUALI DI SUPERAMENTO DELLA CANCELLINOVA:
 cancellinova=read.table(paste0(percorso_input,'cancellinova.txt'),sep='\t',header=TRUE) #percentuale superamento della cancellinova nelle ultime ore
 Prev_prec=read.table(paste0(percorso_input,'precipitaz.txt'),sep='\t',header=TRUE) #previsioni di precipitazioni medie e massime per oggi e domani

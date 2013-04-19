@@ -1,0 +1,6 @@
+staz	StId	zonaA	zonaB	zonaC	zonaD	S1_port	S2_port
+Aymavilles	10050	1	0	1	1	30	80
+Nus	10010	1	0	1	1	35	90
+Champderaz	10030	0	1	0	0	45	120
+Hone	10040	0	1	0	0	50	140
+Pontey	10020	1	0	0	0	40	100

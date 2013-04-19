@@ -83,10 +83,17 @@ for(zona in 1:4) #zona A=1, B=2, C=3, D=4
 #INPUT:
 
 # CARICA I DATI DI PRECIPITAZIONE DELLE STAZIONI
-Prec=read.table(paste0(percorso_input,nomefile[zona]),sep='\t',header=TRUE, skip=1) #monitoraggio precipitazioni per una zona (numero variabile di stazioni)
+Prec=read.table(paste0(percorso_input,nomefile[zona]),sep='\t',skip=1,header=TRUE) #monitoraggio precipitazioni per una zona (numero variabile di stazioni)
+
+#legge la riga dei nome stazione, da inserire nei grafici:
+etichette=read.table(paste0(percorso_input,nomefile[zona]),sep='\t',skip=1,nrows=1)
+etichette=etichette[,-1]
+etichette <- sapply(etichette, as.character) #trasforma le etichette in un character vector
+etichette<- substr(etichette,1,20)
+Encoding(etichette)<-'UTF-8'
 
 #SEPARO LA COLONNA CON LE DATE DAI DATI DI PRECIPITAZIONE(la riga dei codici non è stata caricata)
-date_prec=as.POSIXct(Prec[,1],format='%d/%m/%Y %H.%M')
+date_prec=as.POSIXct(Prec[,1],format='%Y-%m-%d %H:%M:%S')
 Prec=Prec[,-1]
 
 #---------------------------------------------------------------------------------------------------
@@ -133,19 +140,20 @@ for(h in 1:(Ndati-23))
 tabella[zona,5]=any(Pmax12h>=soglieP12) #superamento della soglia di criticità di prec 12 ore
 tabella[zona,6]=any(Pmax24h>=soglieP24) #superamento della soglia di criticità di prec 24 ore
 
+
 #---------------------------------------------------------------------------------------------
 # OUTPUT GRAFICI:
 
 #caratteristiche:
 zona_char=switch(zona,'A','B','C','D')
-etichette=substr(names(Prec),1,20) #estrae le etichette per il grafico dai nomi delle colonne del dataframe (primi 20 caratteri)
+#etichette=substr(names(Prec),1,20) #estrae le etichette per il grafico dai nomi delle colonne del dataframe (primi 20 caratteri)
 
 #GRAFICO DELLA PREC MASSIMA A 12 ORE
 nome_file=paste0(percorso_output,data_sistema,'_prec_max12h_zona',zona_char,'.png')
 png(filename=nome_file,width=larghezza, height=altezza,unit=unita, bg=sfondo, res=risoluzione)
 titolo=paste('Zona ',zona_char,' - Prec MAX 12 ore ',data_sistema)#titolo del grafico
 par(font.axis=1,font.lab=2,font.main=2,cex.axis=1.2,cex.lab=1.5,cex.main=3)#settaggio parametri del grafico corrente
-grafico=barplot(Pmax12h,width=0.5,space=1,col='skyblue2',ylim=c(0,max(Pmax12h,soglieP12)+15),axisnames=FALSE)#grafico a barre delle prec
+grafico=barplot(Pmax12h,width=0.5,space=1,col='skyblue2',ylim=c(0,max(Pmax12h,soglieP12)+10),axisnames=FALSE)#grafico a barre delle prec
 axis(1,at=grafico[seq(1,24,3)],labels=format(date12h[seq(1,24,3)],'%d-%b %H:%S'),las=0) #posiziona le etichette
 lines(soglieP12,col='red3',lty=1,lwd=2) #linea della soglia di riferimento
 title(main=titolo,ylab='prec [mm]')  #titolo e etichetta asse y
@@ -159,7 +167,7 @@ nome_file=paste0(percorso_output,Sys.Date(),'_prec_max24h_zona',zona_char,'.png'
 png(filename=nome_file,width=larghezza, height=altezza,unit=unita, bg=sfondo, res=risoluzione)
 titolo=paste('Zona ',zona_char,' - Prec MAX 24 ore ',data_sistema) #titolo del grafico
 par(font.axis=1,font.lab=2,font.main=2,cex.axis=1.2,cex.lab=1.5,cex.main=3)#settaggio parametri del grafico corrente
-grafico=barplot(Pmax24h,width=0.5,space=1,col='skyblue2',ylim=c(0,max(Pmax24h,soglieP24)+20),axisnames=FALSE) #grafico a barre delle prec
+grafico=barplot(Pmax24h,width=0.5,space=1,col='skyblue2',ylim=c(0,max(Pmax24h,soglieP24)+15),axisnames=FALSE) #grafico a barre delle prec
 axis(1,at=grafico[seq(1,12,3)],labels=format(date24h[seq(1,12,3)],'%d-%b %H:%S'),las=0) #posiziona le etichette
 lines(soglieP24,col='red3',lty=1,lwd=2) #linea della soglia di riferimento
 title(main=titolo,ylab='prec [mm]') #titolo e etichetta asse y
@@ -173,7 +181,7 @@ nome_file=paste0(percorso_output,Sys.Date(),'_prec_med24h_zona',zona_char,'.png'
 png(filename=nome_file,width=larghezza, height=altezza,unit=unita, bg=sfondo, res=risoluzione)
 titolo=paste('Zona ',zona_char,' - Prec MEDIA 24 ore ',data_sistema)
 par(font.axis=1,font.lab=2,font.main=2,cex.axis=1.2,cex.lab=1.5,cex.main=3)#settaggio parametri del grafico corrente
-grafico=barplot(Pmed24h,width=0.5,space=1,col='skyblue2',ylim=c(0,max(Pmed24h,soglie$Pmed24[zona])+15),axisnames=FALSE) #grafico a barre delle prec
+grafico=barplot(Pmed24h,width=0.5,space=1,col='skyblue2',ylim=c(0,max(Pmed24h,soglie$Pmed24[zona])+10),axisnames=FALSE) #grafico a barre delle prec
 axis(1,at=grafico[seq(1,12,3)],labels=format(date24h[seq(1,12,3)],'%d-%b %H:%S'),las=0) #posiziona le etichette
 abline(h=soglie$Pmed24[zona],col='red3',lty=1,lwd=2) #linea della soglia di riferimento
 title(main=titolo,ylab='prec [mm]')
@@ -200,11 +208,18 @@ dev.off()
 
 #GRAFICO PREC MAX 12 ORE PER STAZIONE
 P=apply(P12h,2,max,na.rm=TRUE)#calcola il massimo per ogni stazione
+soglia_ultima=soglieP12[length(soglieP12)]#il valore della soglia di riferimento dell'ultima ora
 nome_file=paste0(percorso_output,Sys.Date(),'_prec_max12h_staz_zona',zona_char,'.png')
 png(filename=nome_file,width=larghezza, height=altezza,unit=unita, bg=sfondo, res=risoluzione)
 titolo=paste('Zona ',zona_char,' - Prec MAX 12 ore ',data_sistema)
 par(font.axis=1,font.lab=2,font.main=2,cex.axis=1.2,cex.lab=1.5,cex.main=3,mai=c(1.6,1,0.82,0.42))#settaggio parametri del grafico corrente
-grafico=barplot(P,width=0.5,space=1,ylim=c(0,max(P)+2),col='skyblue2') #grafico a barre delle prec
+grafico=barplot(P,width=0.5,space=1,ylim=c(0,max(P,soglia_ultima,soglieP12[1])+10),col='skyblue2') #grafico a barre delle prec
+abline(h=soglia_ultima,col='red3',lty=1,lwd=2) #linea della soglia di riferimento
+#se il valore di soglia è variabile nel tempo, aggiungo una linea del valore di soglia iniziale
+if(soglia_ultima!=soglieP12[1])
+  {abline(h=soglieP12[1],col='red3',lty=2,lwd=2)
+   legend('top',c('precipitazione','soglia attuale','soglia iniziale'),lty=c(1,1,2),lwd=c(5,2,2),col=c('skyblue2','red3','red3'),bty='n',ncol=3,cex=1.5)} 
+else{legend('top',c('precipitazione','soglia'),lty=c(1,1),lwd=c(5,2),col=c('skyblue2','red3'),bty='n',ncol=2,cex=1.5)}
 text(grafico,par("usr")[3],labels=etichette,srt=40,adj=c(1,1),xpd=TRUE,font=2,cex=1.2) #ruota le etichette di 45°
 title(main=titolo,ylab='prec [mm]')
 grid(nx=NA,ny=NULL) #griglia per l'asse y
@@ -213,11 +228,18 @@ dev.off()
 
 #GRAFICO PREC MAX 24 ORE PER STAZIONE
 P=apply(P24h,2,max,na.rm=TRUE)#calcola il massimo per ogni stazione
+soglia_ultima=soglieP24[length(soglieP24)]#il valore della soglia di riferimento dell'ultima ora
 nome_file=paste0(percorso_output,Sys.Date(),'_prec_max24h_staz_zona',zona_char,'.png')
 png(filename=nome_file,width=larghezza, height=altezza,unit=unita, bg=sfondo, res=risoluzione)
 titolo=paste('Zona ',zona_char,' - Prec MAX 24 ore ',data_sistema)
 par(font.axis=1,font.lab=2,font.main=2,cex.axis=1.2,cex.lab=1.5,cex.main=3,mai=c(1.6,1,0.82,0.42))#settaggio parametri del grafico corrente
-grafico=barplot(P,width=0.5,space=1,ylim=c(0,max(P)+2),col='skyblue2') #grafico a barre delle prec
+grafico=barplot(P,width=0.5,space=1,ylim=c(0,max(P,soglia_ultima,soglieP24[1])+10),col='skyblue2') #grafico a barre delle prec
+abline(h=soglia_ultima,col='red3',lty=1,lwd=2)#linea della soglia di riferimento
+#se il valore di soglia è variabile nel tempo, aggiungo una linea del valore di soglia iniziale
+if(soglia_ultima!=soglieP24[1])
+{abline(h=soglieP24[1],col='red3',lty=2,lwd=2)
+ legend('top',c('precipitazione','soglia attuale','soglia iniziale'),lty=c(1,1,2),lwd=c(5,2,2),col=c('skyblue2','red3','red3'),bty='n',ncol=3,cex=1.5)} 
+else{legend('top',c('precipitazione','soglia'),lty=c(1,1),lwd=c(5,2),col=c('skyblue2','red3'),bty='n',ncol=2,cex=1.5)}
 text(grafico,par("usr")[3],labels=etichette,srt=40,adj=c(1,1),xpd=TRUE,font=2,cex=1.2) #scrive etichette asse x e le ruota di 45°
 title(main=titolo,ylab='prec [mm]')
 grid(nx=NA,ny=NULL) #griglia per l'asse y

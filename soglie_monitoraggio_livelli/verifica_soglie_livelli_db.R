@@ -18,10 +18,11 @@
 
 #- ----------------------------------------------------------------------
 #- set application working directory
- if(.Platform$OS.type == "windows") {  
-   setwd('C:\\Progetti_R\\soglie_monitoraggio_livelli')
+if(.Platform$OS.type == "windows") {
+  script.dir <- dirname(sys.frame(1)$ofile)
+  setwd(script.dir)
 } else if(.Platform$OS.type == "unix") {
-   setwd("~/")
+  setwd("~/")
 }
 
 
@@ -53,8 +54,8 @@ CONF <- INI.Parse("soglie.ini")
 #- clean up
 #rm(list=ls(all=TRUE)) 
 
-#x<-paste(CONF$Options$base_path, "input","precipitaz.txt", sep="/")
-#unlink(x, recursive = FALSE, force = TRUE)
+x<-paste(CONF$Options$base_path, "input","livelli_36ore.txt", sep="/")
+unlink(x, recursive = FALSE, force = TRUE)
 
 #- ----------------------------------------------------------------------
 #- user settings
@@ -76,19 +77,18 @@ jd <- as.numeric(format(Sys.Date(), "%Y%j"))
 
 #- ----------------------------------------------------------------------
 #-- build the livelli_36ore query
-stids <- '1720,1000,1060,1560,1110,1260,1290,1320,1460,1130,1520,1550,1650,1490,1570,1640,1310,1100,1480,1430,1021'
+stids <- '1720,1000,1060,1560,1110,1260,1290,1320,1460,1130,1520,1550,1650,1490,1570,1640,1310,1100,1480,1430,1020'
 #-- stations names
-query <- paste("SELECT st_id, stationshortname FROM _stations WHERE st_id IN (",stids,")", sep="")
+query <- paste("SELECT st_id FROM _stations WHERE st_id IN (",stids,")", sep="")
 dbdata <- PG.ExecuteQuery(DBH, query)
 # transpose table
-dbdata <- t(dbdata[,2:ncol(dbdata)])
-# Set the column headings
-colnames(dbdata) <- dbdata[1,]
+dbdata <- t(dbdata)
+
 if (DEBUG) dataframe_report(dbdata)
 #- ----------------------------------------------------------------------
 #- export file - work dir + ....
 file <- paste(CONF$Options$base_path, "input","livelli_36ore.txt", sep="/")
-dataframe_dump(dbdata, file)
+dataframe_dump(dbdata, file,TRUE, FALSE)
 
 #-- data
 query <- paste("SELECT * FROM tool_meteolab.build_query_soglie_hidro_stids_hours(ARRAY[",stids,"]::smallint[], 36::smallint)", sep="")
@@ -101,7 +101,7 @@ if (DEBUG) dataframe_report(dbdata)
 #- ----------------------------------------------------------------------
 #- export file - work dir + ....
 file <- paste(CONF$Options$base_path, "input","livelli_36ore.txt", sep="/")
-dataframe_dump(dbdata, file, TRUE)
+dataframe_dump(dbdata, file,FALSE, TRUE, TRUE)
 
 #- ----------------------------------------------------------------------
 #- disconnect from database server
