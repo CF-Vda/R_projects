@@ -53,7 +53,7 @@ CONF <- INI.Parse("soglie.ini")
 #- ----------------------------------------------------------------------
 #- clean up
 #rm(list=ls(all=TRUE)) 
-
+x<-character(6)
 x[1]<-paste(CONF$Options$base_path, "input","cancellinova_36ore.txt", sep="/")
 x[2]<-paste(CONF$Options$base_path, "input","zero_termVDA_36ore.txt", sep="/")
 x[3]<-paste(CONF$Options$base_path, "input","monitoraggio_prec_A.txt", sep="/")
