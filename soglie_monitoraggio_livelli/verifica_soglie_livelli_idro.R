@@ -39,6 +39,7 @@ h=1:length(soglie$StId)
 k=match(soglie$StId[h],codici[1,h]) #controlla la corrispondenza dei codici stazione
 massimi[h,1]=Liv_idro_max[k] #ordina i valori di Liv_idro_max in base ai codici stazione StId
 copertura[h,1]=copertura_staz[k,1] #ordina i valori di copertura secondo i codici StId
+copertura=round(copertura)
 
 #CONFRONTA IL LIVELLO MASSIMO ASSOCIATO AD OGNI STAZIONE CON I LIVELLI DI SOGLIA:
 for(h in which(!is.na(massimi)))
