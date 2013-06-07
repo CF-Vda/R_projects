@@ -28,7 +28,7 @@ done
 
 # copy all data files
 scp -r sync/*.txt cfuser@cluster-db1:/home/cfuser/www_data/soglie/monitoraggio_livelli/
-
+scp -r sync/*.txt cfuser@cluster-web2:/home/cfuser/www/presidi/public/images/soglie/monitoraggio_livelli/
 
 
 
@@ -59,6 +59,7 @@ done
 
 # copy all data files
 scp -r sync/*.txt cfuser@cluster-db1:/home/cfuser/www_data/soglie/previsioni/
+scp -r sync/*.txt cfuser@cluster-web2:/home/cfuser/www/presidi/public/images/soglie/previsioni/
 
 
 
@@ -100,6 +101,7 @@ done
 
 # copy all images files
 scp -r sync/*.png cfuser@cluster-db1:/home/cfuser/www_data/soglie/monitoraggio_prec/
+scp -r sync/*.png cfuser@cluster-web2:/home/cfuser/www/presidi/public/images/soglie/monitoraggio_prec/
 
 
 files="*.txt"
@@ -126,4 +128,5 @@ done
 
 # copy all data files
 scp -r sync/*.txt cfuser@cluster-db1:/home/cfuser/www_data/soglie/monitoraggio_prec/
+scp -r sync/*.txt cfuser@cluster-web2:/home/cfuser/www/presidi/public/images/soglie/monitoraggio_prec/
 
